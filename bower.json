@@ -1,0 +1,22 @@
+{
+  "name": "iris-polymer-stat-display",
+  "homepage": "https://github.com/sdk-group/iris-polymer-stat-display",
+  "authors": [
+    "artificial-life <proteus.protocol@gmail.com>"
+  ],
+  "description": "profiling tool for connections etc.",
+  "main": "iris-stat-display",
+  "moduleType": [],
+  "keywords": [
+    "stats",
+    "connections"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}

@@ -1,0 +1,50 @@
+<link rel="import" href="../polymer/polymer.html">
+
+<dom-module id="iris-stat-grabber">
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+    </style>
+
+  </template>
+  <script>
+    (function() {
+      'use strict'
+      window.IRIS.Stats = {
+        network: []
+      };
+
+      Polymer({
+        is: 'iris-stat-grabber',
+        properties: {
+          networkRecords: {
+            type: Array,
+            notify: true,
+            value: function() {
+              return IRIS.Stats.network
+            }
+          }
+        },
+        attached() {
+          this.style.display = 'none';
+        },
+        storeNetworkStat(uri, startTime) {
+          let diff = Date.now() - startTime;
+          let id = _.findIndex(this.networkRecords, ['uri', uri]);
+
+          if (!~id) {
+            this.push('networkRecords', {
+              diff: diff,
+              uri: uri
+            });
+          }
+          if (~id && this.networkRecords[id].diff < diff) console.log(uri, diff);
+          if (~id && this.networkRecords[id].diff < diff)
+            this.set(['networkRecords', id, 'diff'].join('.'), diff);
+        }
+      });
+    })();
+  </script>
+</dom-module>

@@ -1,0 +1,51 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../paper-dialog/paper-dialog.html">
+<link rel="import" href="../paper-item/paper-item.html">
+
+<link rel="import" href="iris-stat-grabber.html">
+
+<dom-module id="iris-stat-display">
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+    </style>
+    <iris-stat-grabber id="grabber"></iris-stat-grabber>
+
+    <paper-dialog id="dialog">
+      <h2>Stats</h2>
+      <paper-dialog-scrollable>
+        <template id="records" is="dom-repeat" items="[[records]]" as="record">
+          <paper-item>
+            [[record.uri]] : [[record.diff]] msec
+          </paper-item>
+        </template>
+      </paper-dialog-scrollable>
+      <div class="buttons">
+        <paper-button dialog-dismiss>Close</paper-button>
+      </div>
+    </paper-dialog>
+  </template>
+  <script>
+    Polymer({
+      is: 'iris-stat-display',
+      properties: {
+        hotKey: {
+          type: String
+        }
+      },
+      attached() {
+        document.onkeydown = (e) => e.keyCode == 83 && this.open() || true;
+      },
+      open() {
+        //@FIXIT: big bunch of hacks and nothing else
+        this.set('records', []);
+        this.async(() => this.set('records', this.$.grabber.networkRecords));
+        this.$.dialog.toggle();
+        return true;
+      }
+
+    });
+  </script>
+</dom-module>
