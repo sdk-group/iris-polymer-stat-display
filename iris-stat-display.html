@@ -1,6 +1,9 @@
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../paper-dialog/paper-dialog.html">
+<link rel="import" href="../paper-dialog-scrollable/paper-dialog-scrollable.html">
 <link rel="import" href="../paper-item/paper-item.html">
+<link rel="import" href="../paper-menu/paper-menu.html">
+<link rel="import" href="../google-chart/google-chart.html">
 
 <link rel="import" href="iris-stat-grabber.html">
 
@@ -9,18 +12,47 @@
     <style>
       :host {
         display: block;
+        --paper-dialog: {
+          height: 700px;
+        }
+      }
+
+      #body {
+        --paper-dialog-scrollable: {
+          display: flex;
+          flex-direction: row;
+        }
+        ;
+      }
+
+      google-chart {
+        width: 600px;
+        height: 500px;
+      }
+
+      paper-item {
+        min-width: 480px;
+        justify-content: space-between;
       }
     </style>
     <iris-stat-grabber id="grabber"></iris-stat-grabber>
 
     <paper-dialog id="dialog">
       <h2>Stats</h2>
-      <paper-dialog-scrollable>
-        <template id="records" is="dom-repeat" items="[[records]]" as="record">
-          <paper-item>
-            [[record.uri]] : [[record.diff]] msec
-          </paper-item>
-        </template>
+      <paper-dialog-scrollable id="body">
+        <div>
+          <paper-menu multi selected-items="{{selected}}">
+            <template id="records" is="dom-repeat" items="[[records]]" as="record">
+              <paper-item>
+                <span>[[record.uri]]</span> <span>(max: [[record.max]]msec av: [[computeAV(record)]]msec)</span>
+              </paper-item>
+            </template>
+          </paper-menu>
+        </div>
+        <div>
+          <google-chart id="selection-chart" options='{"title": "Meh...","seriesType": "bars"}' data="[[getData(selected)]]">
+          </google-chart>
+        </div>
       </paper-dialog-scrollable>
       <div class="buttons">
         <paper-button dialog-dismiss>Close</paper-button>
@@ -34,14 +66,46 @@
         hotKey: {
           type: String
         }
+
       },
+      computeAV(record) {
+        let data = _.map(record.data, 1);
+        let sum = _.sum(data);
+        return _.floor(sum / data.length, 2);
+      },
+      getData(selected) {
+        let sel = _.map(selected, i => this.$.records.itemForElement(i));
+        let labels = ["Time"];
+        _.forEach(sel, item => labels.push(item.uri));
+        let result = [labels];
+        let times = _.sortBy(_.uniq(_.map(_.flatten(_.map(sel, 'data')), 0)));
+        _.forEach(times, time => {
+          let item = Array(selected.length + 1);
+          _.fill(item, undefined);
+          item[0] = time;
+          _.forEach(sel, (set, index) => {
+            let val = _.find(set.data, i => i[0] == time);
+            if (val) item[index + 1] = val[1];
+          })
+          result.push(item);
+        });
+
+        return result
+      },
+
       attached() {
         document.onkeydown = (e) => e.keyCode == 83 && this.open() || true;
       },
       open() {
         //@FIXIT: big bunch of hacks and nothing else
         this.set('records', []);
-        this.async(() => this.set('records', this.$.grabber.networkRecords));
+        console.log(this.$.grabber.networkRecords);
+        let recs = _.map(this.$.grabber.networkRecords, (rec, id) => {
+          rec.uri = id;
+          return rec;
+        });
+        console.log(recs);
+        this.async(() => this.set('records', recs));
         this.$.dialog.toggle();
         return true;
       }

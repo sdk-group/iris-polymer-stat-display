@@ -13,14 +13,14 @@
     (function() {
       'use strict'
       window.IRIS.Stats = {
-        network: []
+        network: {}
       };
 
       Polymer({
         is: 'iris-stat-grabber',
         properties: {
           networkRecords: {
-            type: Array,
+            type: Object,
             notify: true,
             value: function() {
               return IRIS.Stats.network
@@ -32,17 +32,21 @@
         },
         storeNetworkStat(uri, startTime) {
           let diff = Date.now() - startTime;
-          let id = _.findIndex(this.networkRecords, ['uri', uri]);
-
-          if (!~id) {
-            this.push('networkRecords', {
-              diff: diff,
-              uri: uri
+          let date = moment(startTime).format('HH:mm:ss');
+          if (!this.networkRecords.hasOwnProperty(uri)) {
+            this.set('networkRecords.' + uri, {
+              max: diff,
+              data: [
+                [date, diff]
+              ]
             });
+            return;
           }
-          if (~id && this.networkRecords[id].diff < diff) console.log(uri, diff);
-          if (~id && this.networkRecords[id].diff < diff)
-            this.set(['networkRecords', id, 'diff'].join('.'), diff);
+          if (this.networkRecords.hasOwnProperty(uri)) {
+            if (this.networkRecords[uri].max < diff) this.set(['networkRecords', uri, 'max'].join('.'), diff);
+            this.networkRecords[uri].data.push([date, diff]);
+
+          }
         }
       });
     })();
