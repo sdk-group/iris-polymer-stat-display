@@ -44,7 +44,7 @@
           <paper-menu multi selected-items="{{selected}}">
             <template id="records" is="dom-repeat" items="[[records]]" as="record">
               <paper-item>
-                <span>[[record.uri]]</span> <span>(max: [[record.max]]msec av: [[computeAV(record)]]msec)</span>
+                <span>[[record.uri]]</span> <span>(max: [[record.max]]msec | av: [[computeAV(record)]]msec | count: [[record.data.length]])</span>
               </paper-item>
             </template>
           </paper-menu>
@@ -94,7 +94,7 @@
       },
 
       attached() {
-        document.onkeydown = (e) => e.keyCode == 83 && this.open() || true;
+        document.onkeydown = (e) => e.keyCode == 192 && this.open() || true;
       },
       open() {
         //@FIXIT: big bunch of hacks and nothing else
